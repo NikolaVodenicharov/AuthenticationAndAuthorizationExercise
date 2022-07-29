@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using RestApiJsonWebToken.Configuration;
+using Swashbuckle.AspNetCore.Filters;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,7 +32,7 @@ builder
         {
             options.RequireHttpsMetadata = false;
             options.SaveToken = true;
-            options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
+            options.TokenValidationParameters = new TokenValidationParameters()
             {
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(key),
@@ -42,7 +44,23 @@ builder
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+//Swagger options are adding field for locking the token.
+//There we must write "bearer + the token" just like in the description below.
+builder.Services.AddSwaggerGen(options =>
+    {
+        options.AddSecurityDefinition(
+            "oauth2",
+            new OpenApiSecurityScheme
+            {
+                Description = "Standart Authorization header using Bearer scheme (\"bearer {token}\")",
+                In = ParameterLocation.Header,
+                Name = "Authorization",
+                Type = SecuritySchemeType.ApiKey
+            });
+
+        options.OperationFilter<SecurityRequirementsOperationFilter>();
+    });
 
 var app = builder.Build();
 
