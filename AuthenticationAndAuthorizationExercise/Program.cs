@@ -1,7 +1,19 @@
+using AuthenticationAndAuthorizationExercise.Pages.Account;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+
+builder
+    .Services
+    .AddAuthentication()
+    .AddCookie(
+        LoginModel.MyCookie,
+        options =>
+        {
+            options.Cookie.Name = LoginModel.MyCookie;
+        });
 
 var app = builder.Build();
 
