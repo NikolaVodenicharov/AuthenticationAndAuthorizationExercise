@@ -13,8 +13,6 @@ namespace RestApiJsonWebToken.Infrastructure.Extentions.AppBuilderExtensions
 
         private static void AddAuthenticationAndJwtBearer(IServiceCollection services, IConfiguration configuration)
         {
-            var tokenValidationParameters = CreateTokenValidationParameter(configuration);
-
             services
                 .AddAuthentication(options =>
                     {
@@ -25,11 +23,22 @@ namespace RestApiJsonWebToken.Infrastructure.Extentions.AppBuilderExtensions
                     {
                         options.RequireHttpsMetadata = false;
                         options.SaveToken = true;
-                        options.TokenValidationParameters = tokenValidationParameters;
+                        options.TokenValidationParameters = CreateTokenValidationParameter(configuration);
                     });
         }
-
         private static TokenValidationParameters CreateTokenValidationParameter(IConfiguration configuration)
+        {
+            var tokenValidationParameters = new TokenValidationParameters()
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = CreateSymmetricSecurityKey(configuration),
+                ValidateIssuer = false,
+                ValidateAudience = false
+            };
+
+            return tokenValidationParameters;
+        }
+        private static SymmetricSecurityKey CreateSymmetricSecurityKey(IConfiguration configuration)
         {
             var secretKey = configuration
                .GetSection("JwtSettings:Secret")
@@ -41,15 +50,7 @@ namespace RestApiJsonWebToken.Infrastructure.Extentions.AppBuilderExtensions
 
             var symmetricSecurityKey = new SymmetricSecurityKey(secretKeyBytes);
 
-            var tokenValidationParameters = new TokenValidationParameters()
-            {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = symmetricSecurityKey,
-                ValidateIssuer = false,
-                ValidateAudience = false
-            };
-
-            return tokenValidationParameters;
+            return symmetricSecurityKey;
         }
     }
 }

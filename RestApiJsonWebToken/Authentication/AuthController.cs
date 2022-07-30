@@ -6,7 +6,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace RestApiJsonWebToken.Controllers
+namespace RestApiJsonWebToken.Authentication
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -15,11 +15,12 @@ namespace RestApiJsonWebToken.Controllers
         public const string AdminRole = "Admin";
 
         public static User user = new();
-        private IConfiguration configuration;
 
-        public AuthController(IConfiguration configuration)
+        private readonly ITokenService tokenService;
+
+        public AuthController(ITokenService tokenService)
         {
-            this.configuration = configuration;
+            this.tokenService = tokenService;
         }
 
         [HttpPost(nameof(Register))]
@@ -48,34 +49,15 @@ namespace RestApiJsonWebToken.Controllers
                 return BadRequest("Wrong password.");
             }
 
-            var token = CreateToken(user);
-            return Ok(token);
-        }
-
-        private string CreateToken(User user)
-        {
             List<Claim> tokenClaims = new()
             {
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Role, AdminRole)
             };
 
-            var secretKey = configuration.GetSection("JwtSettings:Secret").Value;
+            var accessToken = tokenService.CreateAccessToken(tokenClaims);
 
-            var secretKeyBytes = Encoding.UTF8.GetBytes(secretKey);
-
-            var key = new SymmetricSecurityKey(secretKeyBytes);
-
-            var credentias = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-
-            var token = new JwtSecurityToken(
-                claims: tokenClaims, 
-                expires: DateTime.UtcNow.AddDays(1), 
-                signingCredentials: credentias);
-
-            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-
-            return jwt;
+            return Ok(accessToken);
         }
 
         private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
