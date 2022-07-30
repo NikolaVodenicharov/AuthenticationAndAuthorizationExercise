@@ -12,6 +12,8 @@ namespace RestApiJsonWebToken.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
+        public const string AdminRole = "Admin";
+
         public static User user = new();
         private IConfiguration configuration;
 
@@ -55,6 +57,7 @@ namespace RestApiJsonWebToken.Controllers
             List<Claim> tokenClaims = new()
             {
                 new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Role, AdminRole)
             };
 
             var secretKey = configuration.GetSection("JwtSettings:Secret").Value;

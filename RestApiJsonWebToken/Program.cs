@@ -1,10 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
-using RestApiJsonWebToken.Configuration;
 using RestApiJsonWebToken.Infrastructure.Extentions.AppBuilderExtensions;
-using Swashbuckle.AspNetCore.Filters;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
