@@ -35,10 +35,8 @@ namespace RestApiJsonWebToken.Authentication
 
         public RefreshToken CreateRefreshToken()
         {
-            var randomNumber = new Byte[32];
-
+            var randomNumber = new Byte[64];
             using var randomNumberGenerator = RandomNumberGenerator.Create();
-
             randomNumberGenerator.GetBytes(randomNumber);
 
             var tokenString = Convert.ToBase64String(randomNumber);

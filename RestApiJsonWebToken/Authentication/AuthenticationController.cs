@@ -13,6 +13,7 @@ namespace RestApiJsonWebToken.Authentication
     public class AuthenticationController : ControllerBase
     {
         public const string AdminRole = "Admin";
+        private const string RefreshTokenCookie = "RefreshTokenCookie";
 
         public static User user = new();
 
@@ -48,8 +49,8 @@ namespace RestApiJsonWebToken.Authentication
             }
 
             var isPasswordValid = this.authenticationService.VerifyPasswordHash(
-                    login.Password, 
-                    user.PasswordHash, 
+                    login.Password,
+                    user.PasswordHash,
                     user.PasswordSalt);
 
             if (!isPasswordValid)
@@ -66,7 +67,24 @@ namespace RestApiJsonWebToken.Authentication
             AuthenticatedResponse response = new(
                 authenticationService.CreateAccessToken(tokenClaims));
 
+            SetRefreshTokenToCookie();
             return Ok(response);
+        }
+
+        private void SetRefreshTokenToCookie()
+        {
+            var refreshToken = this.authenticationService.CreateRefreshToken();
+
+            CookieOptions cookieOptions = new()
+            {
+                HttpOnly = true,
+                Expires = refreshToken.ExpirationDate
+            };
+
+            Response.Cookies.Append(RefreshTokenCookie, refreshToken.TokenString, cookieOptions);
+
+            user.RefreshTokenString = refreshToken.TokenString;
+            user.RefreshTokenExpirationDate = refreshToken.ExpirationDate;
         }
     }
 }
