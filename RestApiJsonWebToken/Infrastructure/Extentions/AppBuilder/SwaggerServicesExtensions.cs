@@ -5,9 +5,9 @@ using RestApiJsonWebToken.Configuration;
 using Swashbuckle.AspNetCore.Filters;
 using System.Text;
 
-namespace RestApiJsonWebToken.Infrastructure.Extentions.AppBuilderExtensions
+namespace RestApiJsonWebToken.Infrastructure.Extentions.AppBuilder
 {
-    public static class SwaggerExtensions
+    public static class SwaggerServicesExtensions
     {
         public static void CustomizeSwagger(this IServiceCollection services)
         {

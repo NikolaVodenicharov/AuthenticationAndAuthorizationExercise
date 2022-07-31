@@ -21,7 +21,7 @@ namespace RestApiJsonWebToken.Controllers
         }
 
         [HttpGet(Name = "GetWeatherForecast")]
-        [Authorize(Roles = AuthController.AdminRole)]
+        [Authorize(Roles = AuthenticationController.AdminRole)]
         public IEnumerable<WeatherForecast> Get()
         {
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast

@@ -1,4 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using RestApiJsonWebToken.Authentication.ResponseModels;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -6,11 +7,14 @@ using System.Text;
 
 namespace RestApiJsonWebToken.Authentication
 {
-    public class TokenService : ITokenService
+    public class AuthenticationService : IAuthenticationService
     {
+        private const int AccessTokenExpirationMinutes = 15;
+        private const int RefreshTokenExpirationDays = 7;
+
         private readonly IConfiguration configuration;
 
-        public TokenService(IConfiguration configuration)
+        public AuthenticationService(IConfiguration configuration)
         {
             this.configuration = configuration;
         }
@@ -19,7 +23,7 @@ namespace RestApiJsonWebToken.Authentication
         {
             var jwtSecurityToken = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.UtcNow.AddDays(1),
+                expires: DateTime.UtcNow.AddMinutes(AccessTokenExpirationMinutes),
                 signingCredentials: CreateCredentials());
 
             var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
@@ -29,22 +33,35 @@ namespace RestApiJsonWebToken.Authentication
             return tokenString;
         }
 
-        public string CreateRefreshToken()
+        public RefreshToken CreateRefreshToken()
         {
             var randomNumber = new Byte[32];
 
-            using(var randomNumberGenerator = RandomNumberGenerator.Create())
-            {
-                randomNumberGenerator.GetBytes(randomNumber);
+            using var randomNumberGenerator = RandomNumberGenerator.Create();
 
-                return Convert.ToBase64String(randomNumber);
-            }
+            randomNumberGenerator.GetBytes(randomNumber);
+
+            var tokenString = Convert.ToBase64String(randomNumber);
+            var expires = DateTime.UtcNow.AddDays(RefreshTokenExpirationDays);
+
+            RefreshToken refreshToken = new(
+                tokenString,
+                expires);
+
+
+            return refreshToken;
         }
 
-        public ClaimsPrincipal GetPrincipalForExpiredToken(string token)
+        public bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
         {
-            throw new NotImplementedException();
+            using var hmac = new HMACSHA512(passwordSalt);
+
+            var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+            var isMatching = computedHash.SequenceEqual(passwordHash);
+
+            return isMatching;
         }
+
 
         private SigningCredentials CreateCredentials()
         {

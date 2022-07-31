@@ -2,9 +2,9 @@
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-namespace RestApiJsonWebToken.Infrastructure.Extentions.AppBuilderExtensions
+namespace RestApiJsonWebToken.Infrastructure.Extentions.AppBuilder
 {
-    public static class AuthenticationExtentions
+    public static class AuthenticationServices
     {
         public static void CustomizeAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
