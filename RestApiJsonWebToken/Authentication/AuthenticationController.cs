@@ -32,9 +32,16 @@ namespace RestApiJsonWebToken.Authentication
             var passwordSalt = hmac.Key;
             var passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(register.Password));
 
+            List<Claim> tokenClaims = new()
+            {
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Role, AdminRole)
+            };
+
             user.PasswordSalt = passwordSalt;
             user.PasswordHash = passwordHash;
             user.Username = register.Username;
+            user.Claims = tokenClaims;
 
             return Ok(user);
         }
@@ -58,17 +65,41 @@ namespace RestApiJsonWebToken.Authentication
                 return BadRequest("Wrong password.");
             }
 
-            List<Claim> tokenClaims = new()
+/*            List<Claim> tokenClaims = new()
             {
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Role, AdminRole)
-            };
+            };*/
 
             AuthenticatedResponse response = new(
-                authenticationService.CreateAccessToken(tokenClaims));
+                authenticationService.CreateAccessToken(user.Claims));
 
             SetRefreshTokenToCookie();
             return Ok(response);
+        }
+
+        // refresh AccessToken and RefreshToken
+        [HttpPost(nameof(RefreshToken))]
+        public ActionResult<string> RefreshToken()
+        {
+            var refreshToken = Request.Cookies[RefreshTokenCookie];
+
+            if (!user.RefreshTokenString.Equals(refreshToken))
+            {
+                return Unauthorized("Invalid refresh token.");
+            }
+
+            if(user.RefreshTokenExpirationDate < DateTime.UtcNow)
+            {
+                return Unauthorized("Refresh token is expired.");
+            }
+
+            var accessToken = this.authenticationService.CreateAccessToken(user.Claims);
+            AuthenticatedResponse response = new(accessToken);
+
+            SetRefreshTokenToCookie();
+
+            return Unauthorized(response);
         }
 
         private void SetRefreshTokenToCookie()
