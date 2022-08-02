@@ -1,4 +1,4 @@
-using RestApiJsonWebToken.Infrastructure.Extentions.AppBuilder;
+using RestApiJsonWebToken.Infrastructure.Extensions.ServiceCollection;
 
 var builder = WebApplication.CreateBuilder(args);
 

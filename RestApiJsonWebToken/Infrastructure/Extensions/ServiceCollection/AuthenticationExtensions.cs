@@ -2,10 +2,12 @@
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-namespace RestApiJsonWebToken.Infrastructure.Extentions.AppBuilder
+namespace RestApiJsonWebToken.Infrastructure.Extensions.ServiceCollection
 {
-    public static class AuthenticationServices
+    public static class AuthenticationExtensions
     {
+        // Extensions for IServiceCollection of WebApplicationBuilder.
+        // All customizations about authentications are extracted here.
         public static void CustomizeAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
             AddAuthenticationAndJwtBearer(services, configuration);

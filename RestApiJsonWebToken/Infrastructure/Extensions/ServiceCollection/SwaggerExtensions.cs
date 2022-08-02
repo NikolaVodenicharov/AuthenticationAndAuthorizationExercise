@@ -5,15 +5,17 @@ using RestApiJsonWebToken.Configuration;
 using Swashbuckle.AspNetCore.Filters;
 using System.Text;
 
-namespace RestApiJsonWebToken.Infrastructure.Extentions.AppBuilder
+namespace RestApiJsonWebToken.Infrastructure.Extensions.ServiceCollection
 {
-    public static class SwaggerServicesExtensions
+    // Extensions for IServiceCollection of WebApplicationBuilder.
+    // All customizations about swagger are extracted here.
+    public static class SwaggerExtensions
     {
         public static void CustomizeSwagger(this IServiceCollection services)
         {
             services.AddEndpointsApiExplorer();
 
-            ConfigureSwagger(services);
+            services.ConfigureSwagger();
         }
 
         //Swagger options are adding field for locking the token.
